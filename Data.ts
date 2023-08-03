@@ -1,18 +1,5 @@
-interface IProduct {
-  date: string;
-  product: string;
-  product_name: string;
-  quantity: number;
-  total_price: number;
-}
-
-interface ISales {
-  products: IProduct[];
-}
-
 interface DataSource {
-  sales: ISales;
-  total_value: number;
+  [key: string]: any;
 }
 
 interface ISalesReport {
