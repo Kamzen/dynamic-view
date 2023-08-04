@@ -1,25 +1,17 @@
 import { Data, ISalesReport, DataSource } from "./Data";
-import { ViewField, UserViews } from "./UserViews";
+import { UserViews, ViewField } from "./UserViews";
 
 interface View {
   [field: string]: string | number;
 }
 
-// save and check for existing paths to optimise performace
-
-// const saveAndGetPath = (path: string): string[] => {
-//   const paths: Map<string, string[]> = new Map();
-
-//   return paths.get(path)
-// }
-
-const pathExist = <T extends DataSource>(data: T, path: string): boolean => {
+const pathExist = <T extends DataSource>(data: T, path: string): any => {
   const viewPaths = path.split(".");
-  console.log(viewPaths);
   let currData: any = data;
-  viewPaths.forEach((viewPath: string, i: number) => {
+  for (const viewPath of viewPaths) {
+    let i: number = viewPaths.indexOf(viewPath);
     // handle array index
-    if (viewPath.includes("]")) {
+    if (viewPath.includes("[")) {
       const key: string = viewPath.substring(0, viewPath.indexOf("["));
       const index: number = parseInt(
         viewPath.substring(viewPath.indexOf("[") + 1, viewPath.indexOf("]")),
@@ -30,83 +22,52 @@ const pathExist = <T extends DataSource>(data: T, path: string): boolean => {
       // and check if index extracted from the path is really a number
       if (
         !Array.isArray(currData[key]) ||
-        currData[key].length <= index ||
+        currData[key].length - 1 < index ||
         isNaN(index)
       ) {
-        return false;
+        // console.log("false 1", i);
+
+        return undefined;
       }
 
       // now assign currData to curr view Path property
       currData = currData[key][index];
     } else {
+      // handle wildcard
+      // if (viewPaths[viewPaths.indexOf(viewPath) + 1] === "*") {
+      //   // keep the current object for the previous key, just making sure but obviously it still holds data for the previous key
+      //   // currData = currData[viewPaths[i - 1]];
+      //   // check if the current data is an array
+      //   currData = currData[viewPath];
+      //   if (Array.isArray(currData)) {
+      //     let key: string = viewPaths[i + 2];
+      //     for (const d of currData) {
+      //       console.log(key, d);
+      //       currData = d;
+      //       if (!pathExist(d, key)) {
+      //         return false;
+      //       }
+      //     }
+      //   }
+      // }
+
       // check for property exist
       if (!currData.hasOwnProperty(viewPath)) {
-        return false;
+        // console.log("false 2", i);
+        return undefined;
       }
-      currData = currData[viewPath];
-      console.log(currData);
-      // console.log(i, currData);
-      // check nested arrays
-      if (Array.isArray(currData)) {
-        const nestedViewPaths = viewPaths
-          .slice(viewPaths.indexOf(viewPath) + 1)
-          .join(".");
-        // repeat the above process will deal with you later: NB not to foget: recursions
-        currData.forEach((item: any, idx: number) => {
-          if (!pathExist(item, nestedViewPaths)) {
-            return false;
-          }
-        });
-      }
-    }
-  });
 
-  return true;
+      currData = currData[viewPath];
+    }
+  }
+
+  return currData;
 };
 
-const getViews = () => {};
+const getViews = (userViews: ViewField[]): void => {
+  for (const view of userViews) {
+    console.log(pathExist(Data, view.path));
+  }
+};
 
-console.log(pathExist(Data, "data_source.sales.accounts.total_value"));
-
-// let views: View[] = [];
-
-//     const saleReportData: DataSource = data.data_source;
-
-//     viewFields.forEach((viewField: ViewField, idx: number) => {
-//       const viewPaths = viewField.path.split(".");
-
-//       // first check if the root path exist
-
-//       if (Object.keys(saleReportData).includes(viewPaths[0])) {
-//         // check of path has *
-//         if (viewPaths.includes("*")) {
-//         } else {
-//           console.log(saleReportData[viewPaths[0]]);
-//           console.log(viewPaths);
-//           for (let i: number = 1; i < viewPaths.length; i++) {
-//             let currentPath = viewPaths[i];
-//             if (currentPath.includes("]")) {
-//               const index: number = Number(
-//                 currentPath
-//                   .split("")
-//                   .filter((option) => {
-//                     return /[0-9]/.test(option) && option;
-//                   })
-//                   .join()
-//               );
-//               currentPath = currentPath
-//                 .split("")
-//                 .filter((option) => {
-//                   return /^[A-Za-z]+$/.test(option) && option;
-//                 })
-//                 .join("");
-
-//                 console.log(saleReportData.viewFields[0].haOwnProperty(currentPath))
-//             } else {
-//             }
-//           }
-//         }
-//       }
-//     });
-
-//     return views;
+getViews(UserViews);

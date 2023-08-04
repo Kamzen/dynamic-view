@@ -1,90 +1,59 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Data_1 = require("./Data");
-// save and check for existing paths to optimise performace
-// const saveAndGetPath = (path: string): string[] => {
-//   const paths: Map<string, string[]> = new Map();
-//   return paths.get(path)
-// }
+const UserViews_1 = require("./UserViews");
 const pathExist = (data, path) => {
     const viewPaths = path.split(".");
-    console.log(viewPaths);
     let currData = data;
-    viewPaths.forEach((viewPath, i) => {
+    for (const viewPath of viewPaths) {
+        let i = viewPaths.indexOf(viewPath);
         // handle array index
-        if (viewPath.includes("]")) {
+        if (viewPath.includes("[")) {
             const key = viewPath.substring(0, viewPath.indexOf("["));
             const index = parseInt(viewPath.substring(viewPath.indexOf("[") + 1, viewPath.indexOf("]")), 10);
             // now check from the array property if the property is really an array
             // if so check if the index is within the boundry of array length
             // and check if index extracted from the path is really a number
             if (!Array.isArray(currData[key]) ||
-                currData[key].length <= index ||
+                currData[key].length - 1 < index ||
                 isNaN(index)) {
-                return false;
+                // console.log("false 1", i);
+                return undefined;
             }
             // now assign currData to curr view Path property
             currData = currData[key][index];
         }
         else {
+            // handle wildcard
+            // if (viewPaths[viewPaths.indexOf(viewPath) + 1] === "*") {
+            //   // keep the current object for the previous key, just making sure but obviously it still holds data for the previous key
+            //   // currData = currData[viewPaths[i - 1]];
+            //   // check if the current data is an array
+            //   currData = currData[viewPath];
+            //   if (Array.isArray(currData)) {
+            //     let key: string = viewPaths[i + 2];
+            //     for (const d of currData) {
+            //       console.log(key, d);
+            //       currData = d;
+            //       if (!pathExist(d, key)) {
+            //         return false;
+            //       }
+            //     }
+            //   }
+            // }
             // check for property exist
             if (!currData.hasOwnProperty(viewPath)) {
-                return false;
+                // console.log("false 2", i);
+                return undefined;
             }
             currData = currData[viewPath];
-            console.log(currData);
-            // console.log(i, currData);
-            // check nested arrays
-            if (Array.isArray(currData)) {
-                const nestedViewPaths = viewPaths
-                    .slice(viewPaths.indexOf(viewPath) + 1)
-                    .join(".");
-                // repeat the above process will deal with you later: NB not to foget: recursions
-                currData.forEach((item, idx) => {
-                    if (!pathExist(item, nestedViewPaths)) {
-                        return false;
-                    }
-                });
-            }
         }
-    });
-    return true;
+    }
+    return currData;
 };
-const getViews = () => { };
-console.log(pathExist(Data_1.Data, "data_source.sales.accounts.total_value"));
-// let views: View[] = [];
-//     const saleReportData: DataSource = data.data_source;
-//     viewFields.forEach((viewField: ViewField, idx: number) => {
-//       const viewPaths = viewField.path.split(".");
-//       // first check if the root path exist
-//       if (Object.keys(saleReportData).includes(viewPaths[0])) {
-//         // check of path has *
-//         if (viewPaths.includes("*")) {
-//         } else {
-//           console.log(saleReportData[viewPaths[0]]);
-//           console.log(viewPaths);
-//           for (let i: number = 1; i < viewPaths.length; i++) {
-//             let currentPath = viewPaths[i];
-//             if (currentPath.includes("]")) {
-//               const index: number = Number(
-//                 currentPath
-//                   .split("")
-//                   .filter((option) => {
-//                     return /[0-9]/.test(option) && option;
-//                   })
-//                   .join()
-//               );
-//               currentPath = currentPath
-//                 .split("")
-//                 .filter((option) => {
-//                   return /^[A-Za-z]+$/.test(option) && option;
-//                 })
-//                 .join("");
-//                 console.log(saleReportData.viewFields[0].haOwnProperty(currentPath))
-//             } else {
-//             }
-//           }
-//         }
-//       }
-//     });
-//     return views;
+const getViews = (userViews) => {
+    for (const view of userViews) {
+        console.log(pathExist(Data_1.Data, view.path));
+    }
+};
+getViews(UserViews_1.UserViews);
