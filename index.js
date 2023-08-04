@@ -52,8 +52,12 @@ const pathExist = (data, path) => {
     return currData;
 };
 const getViews = (userViews) => {
+    const views = [];
     for (const view of userViews) {
-        console.log(pathExist(Data_1.Data, view.path));
+        views.push({
+            [view.field_name]: pathExist(Data_1.Data, view.path)
+        });
     }
+    console.log(views);
 };
 getViews(UserViews_1.UserViews);

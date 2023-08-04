@@ -65,9 +65,14 @@ const pathExist = <T extends DataSource>(data: T, path: string): any => {
 };
 
 const getViews = (userViews: ViewField[]): void => {
+  const views = [];
   for (const view of userViews) {
-    console.log(pathExist(Data, view.path));
+    views.push({
+      [view.field_name]: pathExist(Data, view.path)
+    });
   }
+
+  console.log(views);
 };
 
 getViews(UserViews);
